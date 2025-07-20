@@ -1,4 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
+    
+    // --- LÓGICA DE PRE-LOADER, SONIDOS, PESTAÑAS Y ANIMACIONES (Sin cambios) ---
     const preloader = document.getElementById('preloader');
     window.addEventListener('load', () => { preloader.classList.add('loaded'); });
 
@@ -46,34 +48,63 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function animateStats(){document.querySelectorAll('.overlay-pane.active .fill').forEach(bar=>{bar.style.width='0%';const percentage=bar.getAttribute('data-p');setTimeout(()=>{bar.style.width=percentage+'%'},100)})}
     
+    // --- ¡INICIO DE LA LÓGICA DE MÚSICA CORREGIDA! ---
     const audio = document.getElementById('song');
     const playPauseBtn = document.getElementById('play-pause-btn');
     const spotifyIcon = document.querySelector('.spotify-icon');
     const playIcon = '<i class="fas fa-play"></i>';
     const pauseIcon = '<i class="fas fa-pause"></i>';
+
     playPauseBtn.addEventListener('click', () => {
-        if (audio.paused) {
-            audio.play(); playPauseBtn.innerHTML = pauseIcon; spotifyIcon.classList.add('is-spinning');
+        // Verifica si la canción está pausada
+        const isPlaying = !audio.paused;
+
+        if (!isPlaying) {
+            // Si está pausada, intenta reproducirla
+            const playPromise = audio.play();
+
+            if (playPromise !== undefined) {
+                playPromise.then(() => {
+                    // ¡ÉXITO! El navegador dio permiso.
+                    playPauseBtn.innerHTML = pauseIcon;
+                    spotifyIcon.classList.add('is-spinning');
+                }).catch(error => {
+                    // El navegador bloqueó la reproducción. No hacemos nada.
+                    console.error("La reproducción fue bloqueada por el navegador:", error);
+                    playPauseBtn.innerHTML = playIcon;
+                    spotifyIcon.classList.remove('is-spinning');
+                });
+            }
         } else {
-            audio.pause(); playPauseBtn.innerHTML = playIcon; spotifyIcon.classList.remove('is-spinning');
+            // Si ya está sonando, simplemente la pausamos
+            audio.pause();
+            playPauseBtn.innerHTML = playIcon;
+            spotifyIcon.classList.remove('is-spinning');
         }
     });
-    audio.addEventListener('ended', () => { playPauseBtn.innerHTML = playIcon; spotifyIcon.classList.remove('is-spinning'); });
+
+    audio.addEventListener('ended', () => {
+        playPauseBtn.innerHTML = playIcon;
+        spotifyIcon.classList.remove('is-spinning');
+    });
+    // --- FIN DE LA LÓGICA DE MÚSICA CORREGIDA ---
     
     const fnafSticker = document.getElementById('fnaf-sticker');
     const honkSound = new Audio('https://www.myinstants.com/media/sounds/fnaf-nose-honk.mp3');
     fnafSticker.addEventListener('click', () => { honkSound.currentTime = 0; honkSound.play(); });
 
     const copyBtn = document.getElementById('copy-link-btn');
-    const originalBtnText = copyBtn.innerHTML;
-    copyBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        const url = window.location.href;
-        navigator.clipboard.writeText(url).then(() => {
-            copyBtn.innerHTML = '<i class="fas fa-check"></i> ¡Copiado!';
-            copyBtn.classList.add('copied');
-            swooshSound.currentTime = 0; swooshSound.play();
-            setTimeout(() => { copyBtn.innerHTML = originalBtnText; copyBtn.classList.remove('copied'); }, 2000);
+    if (copyBtn) { // Pequeña seguridad por si el botón no existe
+        const originalBtnText = copyBtn.innerHTML;
+        copyBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const url = window.location.href;
+            navigator.clipboard.writeText(url).then(() => {
+                copyBtn.innerHTML = '<i class="fas fa-check"></i> ¡Copiado!';
+                copyBtn.classList.add('copied');
+                swooshSound.currentTime = 0; swooshSound.play();
+                setTimeout(() => { copyBtn.innerHTML = originalBtnText; copyBtn.classList.remove('copied'); }, 2000);
+            });
         });
-    });
+    }
 });
