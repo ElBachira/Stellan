@@ -1,30 +1,25 @@
-// Espera a que todo el contenido HTML se haya cargado antes de ejecutar el script.
-// ¡ESTA ES LA CORRECCIÓN MÁS IMPORTANTE! Todo tu código ahora está aquí dentro.
 document.addEventListener('DOMContentLoaded', function() {
-
-    // --- PRELOADER ---
+    
+    // --- PRE-LOADER ---
     const preloader = document.getElementById('preloader');
     window.addEventListener('load', () => {
         preloader.classList.add('loaded');
     });
 
     // --- EFECTOS DE SONIDO ---
-    // Se definen aquí para que estén disponibles en todo el script.
     const clickSound = new Audio('https://www.fesliyanstudios.com/play-mp3/387');
     const swooshSound = new Audio('https://www.fesliyanstudios.com/play-mp3/570');
-    const honkSound = new Audio('https://www.myinstants.com/media/sounds/fnaf-nose-honk.mp3');
-
-    document.querySelectorAll('.tab-button, .close-btn, .play-button').forEach(button => {
-        button.addEventListener('click', () => {
-            clickSound.currentTime = 0;
-            clickSound.play().catch(error => console.log("Error al reproducir sonido de clic:", error));
-        });
-    });
     
-    document.querySelectorAll('.links-grid a').forEach(button => {
-        button.addEventListener('click', () => {
-            swooshSound.currentTime = 0;
-            swooshSound.play().catch(error => console.log("Error al reproducir sonido swoosh:", error));
+    document.querySelectorAll('.tab-button, .close-btn, .play-button, .links-grid a').forEach(element => {
+        element.addEventListener('click', () => {
+            // Usamos el mismo sonido de "click" para los botones principales y "swoosh" para los links
+            if (element.matches('.links-grid a')) {
+                swooshSound.currentTime = 0;
+                swooshSound.play();
+            } else {
+                clickSound.currentTime = 0;
+                clickSound.play();
+            }
         });
     });
 
@@ -43,7 +38,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     clearInterval(typing);
                 }
             }, 25);
-        }, 500 + index * 100);
+        }, 500 + index * 100); 
     });
 
     // --- EFECTO PARALLAX EN EL FONDO ---
@@ -52,10 +47,13 @@ document.addEventListener('DOMContentLoaded', function() {
         const { innerWidth, innerHeight } = window;
         const xOffset = (clientX / innerWidth - 0.5) * -2;
         const yOffset = (clientY / innerHeight - 0.5) * -2;
-        document.body.style.backgroundPosition = `calc(50% + ${xOffset}%) calc(50% + ${yOffset}%)`;
+        // Se aplica solo si el usuario no prefiere movimiento reducido
+        if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            document.body.style.backgroundPosition = `calc(50% + ${xOffset}%) calc(50% + ${yOffset}%)`;
+        }
     });
 
-    // --- LÓGICA DE PESTAÑAS (TABS) ---
+    // --- LÓGICA DE PESTAÑAS (STATS Y LINKS) ---
     const tabButtons = document.querySelectorAll('.tab-button');
     const closeButtons = document.querySelectorAll('.close-btn');
     
@@ -75,18 +73,17 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // --- LÓGICA DE BARRAS DE ESTADÍSTICAS ---
     function animateStats() {
         document.querySelectorAll('.overlay-pane.active .fill').forEach(bar => {
             bar.style.width = '0%'; // Reinicia la barra
             const percentage = bar.getAttribute('data-p');
             setTimeout(() => {
                 bar.style.width = percentage + '%';
-            }, 100); // Pequeño retraso para que la transición se active
+            }, 100); // Pequeño retraso para que la transición se vea
         });
     }
 
-    // --- LÓGICA DEL REPRODUCTOR DE MÚSICA (CORREGIDA Y ORDENADA) ---
+    // --- LÓGICA DEL REPRODUCTOR DE MÚSICA (CORREGIDO) ---
     const audio = document.getElementById('song');
     const playPauseBtn = document.getElementById('play-pause-btn');
     const spotifyIcon = document.querySelector('.spotify-icon');
@@ -94,24 +91,19 @@ document.addEventListener('DOMContentLoaded', function() {
     const pauseIcon = '<i class="fas fa-pause"></i>';
 
     playPauseBtn.addEventListener('click', () => {
-        // Verifica si la canción está pausada o no ha comenzado
-        if (audio.paused) {
-            // Intenta reproducir la canción. El .catch es para manejar errores si el navegador bloquea la reproducción.
-            audio.play().then(() => {
-                playPauseBtn.innerHTML = pauseIcon;
-                spotifyIcon.classList.add('is-spinning');
-            }).catch(error => {
-                console.error("Error al reproducir la canción:", error);
-                // Opcional: mostrar un mensaje al usuario si falla.
-            });
-        } else {
+        const isPlaying = !audio.paused;
+        if (isPlaying) {
             audio.pause();
             playPauseBtn.innerHTML = playIcon;
             spotifyIcon.classList.remove('is-spinning');
+        } else {
+            audio.play();
+            playPauseBtn.innerHTML = pauseIcon;
+            spotifyIcon.classList.add('is-spinning');
         }
     });
 
-    // Cuando la canción termina, vuelve al ícono de play
+    // Sincroniza el ícono si la música termina sola
     audio.addEventListener('ended', () => {
         playPauseBtn.innerHTML = playIcon;
         spotifyIcon.classList.remove('is-spinning');
@@ -119,27 +111,26 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // --- EASTER EGG DE FNAF ---
     const fnafSticker = document.getElementById('fnaf-sticker');
+    const honkSound = new Audio('https://www.myinstants.com/media/sounds/fnaf-nose-honk.mp3');
     fnafSticker.addEventListener('click', () => {
         honkSound.currentTime = 0;
-        honkSound.play().catch(error => console.log("Error al reproducir sonido honk:", error));
+        honkSound.play();
     });
 
-    // --- LÓGICA PARA EL BOTÓN DE COPIAR LINK (AHORA DENTRO DE DOMCONTENTLOADED) ---
+    // --- LÓGICA PARA EL BOTÓN DE COPIAR LINK ---
     const copyBtn = document.getElementById('copy-link-btn');
     const originalBtnText = copyBtn.innerHTML;
 
     copyBtn.addEventListener('click', (e) => {
-        e.preventDefault(); // Evita que el link "#" haga saltar la página
+        e.preventDefault(); // Evita que la página salte
         
-        const url = window.location.href;
-        navigator.clipboard.writeText(url).then(() => {
-            // Éxito al copiar
+        navigator.clipboard.writeText(window.location.href).then(() => {
             copyBtn.innerHTML = '<i class="fas fa-check"></i> ¡Copiado!';
             copyBtn.classList.add('copied');
             
-            // Reproduce sonido de éxito
-            swooshSound.currentTime = 0;
-            swooshSound.play().catch(error => console.log("Error al reproducir sonido swoosh:", error));
+            // Reutilizamos el sonido de "swoosh" para feedback
+            swooshSound.currentTime = 0; 
+            swooshSound.play();
 
             // Vuelve al texto original después de 2 segundos
             setTimeout(() => {
@@ -147,7 +138,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 copyBtn.classList.remove('copied');
             }, 2000);
         }).catch(err => {
-            console.error('Error al copiar el texto: ', err);
+            console.error('Error al copiar el enlace: ', err);
+            copyBtn.innerHTML = 'Error al copiar';
         });
     });
 });
