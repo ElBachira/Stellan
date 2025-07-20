@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const clickSound = new Audio('https://www.fesliyanstudios.com/play-mp3/387');
     const swooshSound = new Audio('https://www.fesliyanstudios.com/play-mp3/570');
     
-    document.querySelectorAll('.tab-button, .close-btn, .play-button').forEach(button => {
+    document.querySelectorAll('.tab-button,.close-btn,.play-button').forEach(button => {
         button.addEventListener('click', () => {
             clickSound.currentTime = 0;
             clickSound.play();
