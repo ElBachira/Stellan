@@ -1,4 +1,25 @@
 document.addEventListener('DOMContentLoaded', function() {
+
+    // Coloca esto al principio de tu script, dentro del 'DOMContentLoaded'
+
+const audio = document.getElementById('song');
+
+// Una función para inicializar el audio en la primera interacción del usuario
+function unlockAudio() {
+    audio.play();
+    audio.pause();
+    audio.currentTime = 0;
+    // Una vez desbloqueado, eliminamos el evento para que no se repita
+    document.body.removeEventListener('click', unlockAudio);
+    document.body.removeEventListener('touchstart', unlockAudio);
+}
+
+// Escuchamos el primer clic o toque en cualquier parte de la página
+document.body.addEventListener('click', unlockAudio);
+document.body.addEventListener('touchstart', unlockAudio);
+
+// El resto de tu código...
+// ...
     
     // --- PRE-LOADER ---
     const preloader = document.getElementById('preloader');
